@@ -2,7 +2,8 @@
 
 namespace Oauth\Services;
 
-use App\User;
+use App\Wallet;
+use App\Customer;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Auth\AuthManager;
@@ -59,9 +60,9 @@ class LoginProxyService
      */
     public function login(string $email, string $password)
     {
-        $user = User::where('email', $email)->first();
+        $customer = Customer::where('email', $email)->first();
 
-        if (! $user) {
+        if (! $customer) {
             throw new InvalidCredentialsException();
         }
 
@@ -152,13 +153,20 @@ class LoginProxyService
      */
     public function register(array $data): array
     {
-        $user = new User;
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->password = bcrypt($data['password']);
+        // Create Customer
+        $customer = new Customer;
+        $customer->name = $data['name'];
+        $customer->email = $data['email'];
+        $customer->password = bcrypt($data['password']);
+        $customer->save();
 
-        $user->save();
+        // Create Wallet
+        $wallet = new Wallet;
+        $wallet->amount = 0;
+        $wallet->currency_id = 'MXN';
 
-        return $user->toArray();
+        $customer->wallet()->save($wallet);
+
+        return $customer->toArray();
     }
 }

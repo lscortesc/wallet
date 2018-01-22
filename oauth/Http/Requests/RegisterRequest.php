@@ -24,7 +24,7 @@ class RegisterRequest extends BaseRequest
     {
         return [
             'name' => 'required|min:5|max:70',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:customers,email',
             'password' => 'required|min:8|confirmed:password_confirmation'
         ];
     }
