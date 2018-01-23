@@ -15,7 +15,7 @@ class CreateWallletsTable extends Migration
     {
         Schema::create('wallets', function (Blueprint $table) {
             $table->increments('id');
-            $table->decimal('amount', 10, 2);
+            $table->decimal('balance', 10, 5);
             $table->unsignedInteger('customer_id');
             $table->string('currency_id', 3);
             $table->timestamps();
@@ -35,10 +35,8 @@ class CreateWallletsTable extends Migration
     public function down()
     {
         Schema::table('wallets', function (Blueprint $table) {
-            $table->dropForeign([
-                'customers_id',
-                'currency_id'
-            ]);
+            $table->dropForeign('wallets_customer_id_foreign');
+            $table->dropForeign('wallets_currency_id_foreign');
         });
         Schema::dropIfExists('wallets');
     }

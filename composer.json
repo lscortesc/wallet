@@ -25,7 +25,8 @@
         ],
         "psr-4": {
             "App\\": "app/",
-            "Oauth\\": "oauth/"
+            "Oauth\\": "oauth/",
+            "Gateway\\": "gateway/"
         }
     },
     "autoload-dev": {

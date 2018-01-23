@@ -17,4 +17,9 @@ Route::middleware('auth:api')->group(function() {
     Route::get('/me', function (Request $request) {
         return $request->user();
     });
+
+    // Wallet
+    Route::prefix('/wallet')->group(function() {
+        Route::post('/fund', 'WalletController@fund');
+    });
 });

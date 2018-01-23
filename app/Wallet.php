@@ -28,6 +28,14 @@ class Wallet extends Model
      */
     public function currency()
     {
-        return $this->belongsT(Currency::class, 'currency_id', 'id');
+        return $this->belongsTo(Currency::class, 'currency_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'wallet_id', 'id');
     }
 }

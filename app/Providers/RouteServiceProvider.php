@@ -81,4 +81,3 @@ class RouteServiceProvider extends ServiceProvider
             ->group(base_path($routesFile));
     }
 }
-

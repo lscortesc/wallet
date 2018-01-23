@@ -2,6 +2,8 @@
 
 namespace Oauth\Http\Requests;
 
+use App\Http\Requests\BaseRequest;
+
 /**
  * Class RegisterRequest
  * @package Oauth\Http\Requests

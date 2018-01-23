@@ -80,7 +80,8 @@ class ProxyController extends Controller
         ]);
 
         return $this->response(
-            $this->proxy->register($data), 201
+            $this->proxy->register($data),
+            201
         );
     }
 }
