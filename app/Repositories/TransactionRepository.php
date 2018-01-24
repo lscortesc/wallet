@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Transaction;
-use Illuminate\Support\Facades\App;
 
 /**
  * Class TransactionRepository
@@ -12,27 +11,15 @@ use Illuminate\Support\Facades\App;
 class TransactionRepository
 {
     /**
-     * @var
-     */
-    private $model;
-
-    /**
-     * TransactionRepository constructor.
-     */
-    public function __construct()
-    {
-        $this->model = App::make(Transaction::class);
-    }
-
-    /**
      * @param int $walletId
      * @param $data
      * @return Transaction
      */
     public function create(int $walletId, $data)
     {
-        $transaction = $this->model;
+        $transaction = new Transaction;
         $transaction->amount = $data['amount'];
+        $transaction->amount_with_commission = $data['amount_with_commission'];
         $transaction->authorized = $data['authorized'];
         $transaction->message = $data['message'];
         $transaction->transaction_number = $data['transaction_number'];

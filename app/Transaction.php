@@ -14,13 +14,22 @@ class Transaction extends Model
      * @var string
      */
     protected $table = 'transactions';
+
+    /**
+     * @var array
+     */
+    protected $casts = [
+        'amount' => 'float',
+        'amount_with_commission' => 'float',
+        'authorized' => 'bool'
+    ];
     
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function wallet()
     {
-        return $this->belongsTo(Wallet::class, 'id', 'wallet_id');
+        return $this->belongsTo(Wallet::class, 'wallet_id', 'id');
     }
 
     /**

@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Wallet;
+use App\Customer;
 use Oauth\Traits\ResponseTrait;
 use App\Services\TransactionService;
+use App\Repositories\WalletRepository;
+use Oauth\Contracts\FormatterInterface;
 use App\Http\Requests\FundWalletRequest;
+use Symfony\Component\HttpFoundation\Request;
+use App\Http\Requests\TransferToAnotherCustomerRequest;
 use Gateway\Payments\DummyBankPayment\DummyBankPayment;
 
 /**
@@ -20,17 +26,32 @@ class WalletController extends Controller
     private $transactionService;
 
     /**
+     * @var DummyBankPayment
+     */
+    private $gatewayPayment;
+
+    /**
+     * @var WalletRepository
+     */
+    private $repository;
+
+    /**
      * WalletController constructor.
      * @param TransactionService $transactionService
+     * @param WalletRepository $repository
      */
-    public function __construct(TransactionService $transactionService)
-    {
+    public function __construct(
+        TransactionService $transactionService,
+        WalletRepository $repository
+    ) {
         $this->transactionService = $transactionService;
+        $this->gatewayPayment = new DummyBankPayment();
+        $this->repository = $repository;
     }
 
     /**
      * @param FundWalletRequest $request
-     * @return mixed
+     * @return FormatterInterface
      */
     public function fund(FundWalletRequest $request)
     {
@@ -38,23 +59,68 @@ class WalletController extends Controller
         $amount = $request->get('amount');
 
         $transaction = $this->transactionService->fundWallet(
-            new DummyBankPayment(),
+            $this->gatewayPayment,
             $wallet,
             $amount,
             $request->all()
         );
 
-        if (! $transaction['transaction']->authorized) {
+        if (! $transaction->authorized) {
             return $this->response([
-                'error' => $transaction['transaction']
+                'error' => $transaction
             ], 422);
         }
 
-        $wallet->balance += ($amount - $transaction['commission']->amount);
-        $wallet->save();
+        return $this->response($wallet->with('currency')->find($wallet->id));
+    }
 
-        $this->transactionService->transferToGeneralWallet($transaction['commission']);
+    /**
+     * @param TransferToAnotherCustomerRequest $request
+     * @param Customer $customerReceiver
+     * @return mixed
+     */
+    public function transferToAnotherCustomer(
+        TransferToAnotherCustomerRequest $request,
+        Customer $customerReceiver
+    ) {
+        $wallet = $request->user()->wallet;
 
-        return $this->response($wallet);
+        $transaction = $this->transactionService
+            ->transferToAnotherCustomer(
+                $this->gatewayPayment,
+                $wallet,
+                $this->repository->getByCustomer($customerReceiver, ['customer', 'currency']),
+                $request->get('amount'),
+                $request->all()
+            );
+
+        return $this->response($transaction);
+    }
+
+    /**
+     * @param Request $request
+     * @return FormatterInterface
+     */
+    public function balance(Request $request)
+    {
+        $wallet = $request->user()->wallet;
+
+        return $this->response(
+            Wallet::with('currency')->find($wallet->id)
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function transactions(Request $request)
+    {
+        return $this->response(
+            $request->user()
+                ->wallet()
+                ->with('currency', 'transactions.commission')
+                ->first()
+        );
     }
 }

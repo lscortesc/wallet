@@ -16,6 +16,11 @@ class Currency extends Model
     protected $table = 'currencies';
 
     /**
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function wallets()

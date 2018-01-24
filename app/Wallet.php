@@ -16,11 +16,18 @@ class Wallet extends Model
     protected $table = 'wallets';
 
     /**
+     * @var array
+     */
+    protected $casts = [
+        'balance' => 'float'
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(Customer::class, 'id', 'user_id');
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
 
     /**

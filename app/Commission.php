@@ -11,10 +11,23 @@ use Illuminate\Database\Eloquent\Model;
 class Commission extends Model
 {
     /**
+     * @var string
+     */
+    protected $table = 'commissions';
+
+    /**
+     * @var array
+     */
+    protected $casts = [
+        'amount' => 'float',
+        'percentage' => 'float',
+        'fixed_rate' => 'float'
+    ];
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function transaction()
     {
-        return $this->belongsTo(Transaction::class, 'id', 'transaction_id');
+        return $this->belongsTo(Transaction::class, 'transaction_id', 'id');
     }
 }

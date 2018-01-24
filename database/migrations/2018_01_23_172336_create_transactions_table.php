@@ -16,10 +16,11 @@ class CreateTransactionsTable extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->increments('id');
             $table->decimal('amount', 20, 2);
+            $table->decimal('amount_with_commission', 20, 2);
             $table->boolean('authorized');
             $table->string('message');
             $table->string('transaction_number', 20);
-            $table->string('type', 10);
+            $table->string('type', 20);
             $table->string('status', 10);
             $table->unsignedInteger('wallet_id');
             $table->timestamps();

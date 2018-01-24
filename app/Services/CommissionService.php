@@ -27,10 +27,21 @@ class CommissionService
 
     /**
      * @param float $amount
+     * @param string $type
      * @return array
      */
-    public function generateCommission(float $amount)
+    public function generateCommission(float $amount, string $type)
     {
+        if ($type === TransactionService::TRANSACTION_TRANSFER_RECEIVED) {
+            return [
+                'percentage' => 0,
+                'fixed_rate' => 0,
+                'amount' => $amount,
+                'amount_with_commission' => $amount,
+                'commission' => 0
+            ];
+        }
+
         $percentage = 0;
         $fixedRate = 0;
 
@@ -58,7 +69,7 @@ class CommissionService
         $amountWithCommission = $amount - $commission;
 
         return [
-            'percentage' => $percentage,
+            'percentage' => $percentage * 100,
             'fixed_rate' => $fixedRate,
             'amount' => $amount,
             'amount_with_commission' => $amountWithCommission,

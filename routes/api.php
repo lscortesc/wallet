@@ -20,6 +20,10 @@ Route::middleware('auth:api')->group(function() {
 
     // Wallet
     Route::prefix('/wallet')->group(function() {
+        Route::get('/balance', 'WalletController@balance');
+        Route::post('/transfer/{customerTransfer}', 'WalletController@transferToAnotherCustomer');
+        Route::post('/transfer/account', 'WalletController@transferToAccount');
         Route::post('/fund', 'WalletController@fund');
+        Route::get('/transactions', 'WalletController@transactions');
     });
 });
