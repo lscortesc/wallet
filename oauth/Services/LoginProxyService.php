@@ -2,10 +2,12 @@
 
 namespace Oauth\Services;
 
-use App\User;
+use App\Wallet;
+use App\Customer;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Auth\AuthManager;
+use Illuminate\Support\Facades\DB;
 use Oauth\Formatter\JsonFormatter;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
@@ -59,9 +61,9 @@ class LoginProxyService
      */
     public function login(string $email, string $password)
     {
-        $user = User::where('email', $email)->first();
+        $customer = Customer::where('email', $email)->first();
 
-        if (! $user) {
+        if (! $customer) {
             throw new InvalidCredentialsException();
         }
 
@@ -148,17 +150,33 @@ class LoginProxyService
 
     /**
      * @param array $data
-     * @return array
+     * @return Customer
+     * @throws \Exception
      */
-    public function register(array $data): array
+    public function register(array $data): Customer
     {
-        $user = new User;
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->password = bcrypt($data['password']);
+        DB::beginTransaction();
+        try {
+            // Create Customer
+            $customer = new Customer;
+            $customer->name = $data['name'];
+            $customer->email = $data['email'];
+            $customer->password = bcrypt($data['password']);
+            $customer->save();
 
-        $user->save();
+            // Create Wallet
+            $wallet = new Wallet;
+            $wallet->balance = 0;
+            $wallet->currency_id = 'MXN';
 
-        return $user->toArray();
+            $customer->wallet()->save($wallet);
+
+            DB::commit();
+
+            return $customer;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw new \Exception('Error at register customer');
+        }
     }
 }
