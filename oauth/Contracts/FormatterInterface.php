@@ -13,7 +13,7 @@ interface FormatterInterface
      * @param int $status
      * @return \HttpResponse Response
      */
-    public function response(array $data = [], int $status = 200);
+    public function response($data = [], int $status = 200);
 
     /**
      * @param string $data

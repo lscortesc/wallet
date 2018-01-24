@@ -1,6 +1,6 @@
 <?php
 
-namespace Oauth\Http\Requests;
+namespace App\Http\Requests;
 
 use Oauth\Traits\ResponseTrait;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,7 +9,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 /**
  * Class BaseRequest
- * @package Oauth\Http\Requests
+ * @package App\Http\Requests
  */
 class BaseRequest extends FormRequest
 {

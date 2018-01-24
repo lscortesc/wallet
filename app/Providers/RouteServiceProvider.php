@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Customer;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
@@ -26,6 +27,18 @@ class RouteServiceProvider extends ServiceProvider
         //
 
         parent::boot();
+
+        Route::bind('customerTransfer', function ($value) {
+            $customer = Customer::whereNotIn('id', [1])
+                ->find($value);
+
+            if (! $customer) {
+                abort(404, 'Customer Not Found');
+            }
+
+            return $customer->id !== request()->user()->id ? $customer :
+                abort(404, "You can't send money to yourself");
+        });
     }
 
     /**
@@ -81,4 +94,3 @@ class RouteServiceProvider extends ServiceProvider
             ->group(base_path($routesFile));
     }
 }
-
