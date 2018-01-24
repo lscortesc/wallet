@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Wallet;
 use App\Customer;
 use Oauth\Traits\ResponseTrait;
 use App\Services\TransactionService;
@@ -10,7 +9,8 @@ use App\Repositories\WalletRepository;
 use Oauth\Contracts\FormatterInterface;
 use App\Http\Requests\FundWalletRequest;
 use Symfony\Component\HttpFoundation\Request;
-use App\Http\Requests\TransferToAnotherCustomerRequest;
+use App\Http\Requests\TransferBalanceRequest;
+use App\Http\Requests\TransferAccountBalanceRequest;
 use Gateway\Payments\DummyBankPayment\DummyBankPayment;
 
 /**
@@ -71,25 +71,42 @@ class WalletController extends Controller
             ], 422);
         }
 
-        return $this->response($wallet->with('currency')->find($wallet->id));
+        return $this->response(
+            $wallet->with('currency')->find($wallet->id)
+        );
     }
 
     /**
-     * @param TransferToAnotherCustomerRequest $request
+     * @param TransferBalanceRequest $request
      * @param Customer $customerReceiver
      * @return mixed
      */
     public function transferToAnotherCustomer(
-        TransferToAnotherCustomerRequest $request,
+        TransferBalanceRequest $request,
         Customer $customerReceiver
     ) {
-        $wallet = $request->user()->wallet;
-
         $transaction = $this->transactionService
             ->transferToAnotherCustomer(
                 $this->gatewayPayment,
-                $wallet,
+                $request->user()->wallet,
                 $this->repository->getByCustomer($customerReceiver, ['customer', 'currency']),
+                $request->get('amount'),
+                $request->all()
+            );
+
+        return $this->response($transaction);
+    }
+
+    /**
+     * @param TransferAccountBalanceRequest $request
+     * @return FormatterInterface
+     */
+    public function transferToAccount(TransferAccountBalanceRequest $request)
+    {
+        $transaction = $this->transactionService
+            ->transferToAccount(
+                $this->gatewayPayment,
+                $request->user()->wallet,
                 $request->get('amount'),
                 $request->all()
             );
@@ -103,10 +120,31 @@ class WalletController extends Controller
      */
     public function balance(Request $request)
     {
-        $wallet = $request->user()->wallet;
-
         return $this->response(
-            Wallet::with('currency')->find($wallet->id)
+            $this->repository->getByCustomer(
+                $request->user(),
+                [
+                    'currency',
+                    'customer'
+                ]
+            )
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @return FormatterInterface
+     */
+    public function transactions(Request $request)
+    {
+        return $this->response(
+            $this->repository->getByCustomer(
+                $request->user(),
+                [
+                    'currency',
+                    'transactions.commission'
+                ]
+            )
         );
     }
 
@@ -114,13 +152,16 @@ class WalletController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function transactions(Request $request)
+    public function balanceAccountGeneral(Request $request)
     {
+        if ($request->user()->wallet->id !== WalletRepository::GENERAL_ACCOUNT_ID) {
+            return $this->response([
+                "errors" => "You don't have permissions to consult it"
+            ], 400);
+        }
+
         return $this->response(
-            $request->user()
-                ->wallet()
-                ->with('currency', 'transactions.commission')
-                ->first()
+            $this->repository->getGeneralAccount()
         );
     }
 }

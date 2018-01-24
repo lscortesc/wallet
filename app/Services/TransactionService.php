@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Transaction;
 use App\Wallet;
 use App\Commission;
 use App\Repositories\WalletRepository;
@@ -28,6 +29,16 @@ class TransactionService
      * Transfer Transaction Received
      */
     const TRANSACTION_TRANSFER_RECEIVED = 'transfer_received';
+
+    /**
+     * Transfer to Account
+     */
+    const TRANSACTION_TRANSFER_ACCOUNT = 'transfer_account';
+
+    /**
+     * Commission Type
+     */
+    const TRANSACTION_COMMISSION = 'commission';
 
     /**
      * @var CommissionService
@@ -85,12 +96,46 @@ class TransactionService
                 'increments'
             );
 
-            $this->transferToGeneralWallet($transaction['commission']);
+            $this->transferToGeneralWallet($transaction['commission'], $transfer);
         }
 
         return $transaction['transaction'];
     }
 
+    /**
+     * @param PaymentInterface $gateway
+     * @param Wallet $wallet
+     * @param float $amount
+     * @param array $accountData
+     * @return Transaction
+     */
+    public function transferToAccount(
+        PaymentInterface $gateway,
+        Wallet $wallet,
+        float $amount,
+        array $accountData
+    ) {
+        $transfer = $gateway->transfer($amount, $accountData);
+        $transfer['type'] = self::TRANSACTION_TRANSFER_ACCOUNT;
+
+        $transaction = $this->makeTransaction($wallet, $amount, $transfer);
+        $this->transferToGeneralWallet($transaction['commission'], $transfer);
+
+        if ($transfer['authorized']) {
+            $this->walletRepository->updateBalance($wallet, $amount, 'decrements');
+        }
+
+        return $transaction['transaction'];
+    }
+
+    /**
+     * @param PaymentInterface $gateway
+     * @param Wallet $sender
+     * @param Wallet $receiver
+     * @param float $amount
+     * @param array $data
+     * @return Transaction
+     */
     public function transferToAnotherCustomer(
         PaymentInterface $gateway,
         Wallet $sender,
@@ -103,7 +148,7 @@ class TransactionService
 
         // Send Transaction
         $sendTransaction = $this->makeTransaction($sender, $amount, $transfer);
-        $this->transferToGeneralWallet($sendTransaction['commission']);
+        $this->transferToGeneralWallet($sendTransaction['commission'], $transfer);
 
         // Receiver transaction
         $transfer['type'] = self::TRANSACTION_TRANSFER_RECEIVED;
@@ -127,7 +172,6 @@ class TransactionService
      * @param float $amount
      * @param array $data
      * @return array
-     * @internal param int $walletId
      */
     protected function makeTransaction(Wallet $wallet, float $amount, array $data): array
     {
@@ -150,11 +194,15 @@ class TransactionService
 
     /**
      * @param Commission $commission
+     * @param array $data
      * @return Wallet
      */
-    public function transferToGeneralWallet(Commission $commission)
+    protected function transferToGeneralWallet(Commission $commission, array $data)
     {
+        $data['type'] = self::TRANSACTION_COMMISSION;
         $generalAccount = $this->walletRepository->getGeneralAccount();
+        $this->makeTransaction($generalAccount, $commission->amount, $data);
+
         $generalAccount = $this->walletRepository->updateBalance(
             $generalAccount,
             $commission->amount,

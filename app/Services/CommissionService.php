@@ -32,7 +32,9 @@ class CommissionService
      */
     public function generateCommission(float $amount, string $type)
     {
-        if ($type === TransactionService::TRANSACTION_TRANSFER_RECEIVED) {
+        if ($type === TransactionService::TRANSACTION_TRANSFER_RECEIVED ||
+            $type === TransactionService::TRANSACTION_COMMISSION
+        ) {
             return [
                 'percentage' => 0,
                 'fixed_rate' => 0,

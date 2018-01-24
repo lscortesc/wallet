@@ -21,7 +21,9 @@ Route::middleware('auth:api')->group(function() {
     // Wallet
     Route::prefix('/wallet')->group(function() {
         Route::get('/balance', 'WalletController@balance');
-        Route::post('/transfer/{customerTransfer}', 'WalletController@transferToAnotherCustomer');
+        Route::get('/balance/general', 'WalletController@balanceAccountGeneral');
+        Route::post('/transfer/{customerTransfer}', 'WalletController@transferToAnotherCustomer')
+            ->where('customerTransfer', '[0-9]+');
         Route::post('/transfer/account', 'WalletController@transferToAccount');
         Route::post('/fund', 'WalletController@fund');
         Route::get('/transactions', 'WalletController@transactions');

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\MinBalance;
 
-class TransferToAnotherCustomerRequest extends BaseRequest
+class TransferAccountBalanceRequest extends BaseRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,7 +28,10 @@ class TransferToAnotherCustomerRequest extends BaseRequest
                 'required',
                 'numeric',
                 new MinBalance
-            ]
+            ],
+            'account_number' => 'required|min:10',
+            'account_name' => 'required',
+            'account_bank' => 'required'
         ];
     }
 }

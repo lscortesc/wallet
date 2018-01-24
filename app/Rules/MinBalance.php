@@ -4,6 +4,10 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
+/**
+ * Class MinBalance
+ * @package App\Rules
+ */
 class MinBalance implements Rule
 {
     /**
@@ -27,6 +31,6 @@ class MinBalance implements Rule
      */
     public function message()
     {
-        return 'The :attribute is minor to what you have in your wallet';
+        return 'The :attribute is not valid, :attribute should be greater than 10 and smaller than your balance';
     }
 }

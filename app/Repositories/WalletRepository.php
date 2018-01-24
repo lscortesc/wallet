@@ -21,7 +21,9 @@ class WalletRepository
      */
     public function getGeneralAccount()
     {
-        return Wallet::find(self::GENERAL_ACCOUNT_ID);
+        return Wallet::with([
+                'customer', 'currency', 'transactions.commission'
+            ])->find(self::GENERAL_ACCOUNT_ID);
     }
 
     /**
