@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Repositories\TransactionRepository;
 use App\Wallet;
+use App\Commission;
+use App\Repositories\TransactionRepository;
 use Gateway\Contracts\PaymentInterface;
 
 /**
@@ -58,9 +59,7 @@ class TransactionService
         $commissions = $this->commissionService->generateCommission($amount);
         $transfer = array_merge($transfer, $commissions);
 
-        $transaction = $this->makeTransaction($wallet->id, $transfer);
-
-        return $transfer;
+        return $this->makeTransaction($wallet->id, $transfer);
     }
 
     /**
@@ -83,5 +82,19 @@ class TransactionService
             'transaction' => $transaction,
             'commission' => $this->commissionService->saveCommission($transaction, $data)
         ];
+    }
+
+    /**
+     * @param Commission $commission
+     * @return mixed
+     */
+    public function transferToGeneralWallet(Commission $commission)
+    {
+        $generalAccount = Wallet::find(100000);
+
+        $generalAccount->balance += $commission->amount;
+        $generalAccount->save();
+
+        return $generalAccount;
     }
 }

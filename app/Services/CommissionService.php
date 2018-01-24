@@ -39,17 +39,17 @@ class CommissionService
             $fixedRate = 8;
         }
 
-        if ($amount > 1000 && $amount < 5000) {
+        if ($amount >= 1000 && $amount < 5000) {
             $percentage = 0.025;
             $fixedRate = 6;
         }
 
-        if ($amount > 5000 && $amount < 10000) {
+        if ($amount >= 5000 && $amount < 10000) {
             $percentage = 0.02;
             $fixedRate = 4;
         }
 
-        if ($amount > 10000) {
+        if ($amount >= 10000) {
             $percentage = 0.01;
             $fixedRate = 3;
         }

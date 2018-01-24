@@ -15,7 +15,7 @@ class CreateTransactionsTable extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->increments('id');
-            $table->decimal('amount', 10, 5);
+            $table->decimal('amount', 20, 2);
             $table->boolean('authorized');
             $table->string('message');
             $table->string('transaction_number', 20);

@@ -7,41 +7,53 @@ use App\Services\TransactionService;
 use App\Http\Requests\FundWalletRequest;
 use Gateway\Payments\DummyBankPayment\DummyBankPayment;
 
+/**
+ * Class WalletController
+ * @package App\Http\Controllers
+ */
 class WalletController extends Controller
 {
     use ResponseTrait;
+    /**
+     * @var TransactionService
+     */
     private $transactionService;
 
+    /**
+     * WalletController constructor.
+     * @param TransactionService $transactionService
+     */
     public function __construct(TransactionService $transactionService)
     {
         $this->transactionService = $transactionService;
     }
 
+    /**
+     * @param FundWalletRequest $request
+     * @return mixed
+     */
     public function fund(FundWalletRequest $request)
     {
         $wallet = $request->user()->wallet;
+        $amount = $request->get('amount');
 
         $transaction = $this->transactionService->fundWallet(
             new DummyBankPayment(),
             $wallet,
-            $request->get('amount'),
+            $amount,
             $request->all()
         );
 
-        if (! $transaction['authorized']) {
-            unset($transaction['percentage']);
-            unset($transaction['fixed_rate']);
-            unset($transaction['type']);
-            unset($transaction['amount_with_commission']);
-            unset($transaction['commission']);
-
+        if (! $transaction['transaction']->authorized) {
             return $this->response([
-                'error' => $transaction
+                'error' => $transaction['transaction']
             ], 422);
         }
 
-        $wallet->balance += $transaction['amount_with_commission'];
+        $wallet->balance += ($amount - $transaction['commission']->amount);
         $wallet->save();
+
+        $this->transactionService->transferToGeneralWallet($transaction['commission']);
 
         return $this->response($wallet);
     }

@@ -15,7 +15,7 @@ class CreateCommissionsTable extends Migration
     {
         Schema::create('commissions', function (Blueprint $table) {
             $table->increments('id');
-            $table->decimal('amount', 10, 5);
+            $table->decimal('amount', 20, 2);
             $table->decimal('percentage', 5, 2);
             $table->decimal('fixed_rate', 10, 2);
             $table->unsignedInteger('transaction_id');
