@@ -2,11 +2,13 @@
 
 Service to create a wallet (Test)
 
+You can visit on [heroku](https://larawallet.herokuapp.com)
+
 ## Requirements
 
 - PHP >= 7.1.3
 - Composer
-- Mysql >= 5.7
+- Mysql >= 5.6
 - Curl >= 7
 
 ### How to use?
@@ -34,14 +36,30 @@ Service to create a wallet (Test)
 
 | Environment var | Description |
 | --------------- | ----------- |
-| PASSWORD_CLIENT_ID | Type Client to Oauth Service (Always 2) |
-| PASSWORD_CLIENT_SECRET | Secret generated in the step 8 |
+| PASSWORD_CLIENT_ID | Password Client ID (step 8) |
+| PASSWORD_CLIENT_SECRET | Password Secret (step 8) |
+
+### Headers
+
+```shell
+Accept: application/json
+Content-type: application/json
+Authorization: Bearer $ACCESS_TOKEN (generated in /api/login endpoint - important to get resources that requires auth)
+```
 
 ### Endpoints
 
-| Endpoint | Method | Body | Description |
-| -------- | ------ | ---- | ----------- |
-| /api/login | POST | email,password | Login - Retrun Token |
-| /api/logout | POST | header -> Authorization Bearer $TOKEN |
-| /api/login/refresh | POST | refresh_token | Return Token |
-| /api/register | POST | name,email,password,password_confirmation | Return Customer register |
+| Endpoint | Method | Body | Description | Require Auth |
+| -------- | ------ | ---- | ----------- | ------------ |
+| /api/login | POST | email,password | Login - Retrun Token | No |
+| /api/login/refresh | POST | refresh_token | Return Token | Yes |
+| /api/register | POST | name,email,password,password_confirmation | Return Customer register | No |
+| /api/wallet/balance | GET | - | Get My Wallet Balance | Yes |
+| /api/wallet/balance/general | GET | - | Get balance of general account (use `email@test.com` and `secret` to login) | Yes |
+| /api/wallet/fund | POST | amount,carnumber,exp_date(mm/YY),cvv | Fund your wallet | Yes |
+| /api/wallet/transactions | GET | - | Get my transactions | Yes |
+| /api/wallet/transfer/account | POST | amount,account_number,account_name,account_bank | Transfer to bank account | Yes |
+| /api/wallet/transfer/{customer_id} | POST | amount | Transfer to another customer wallet | Yes |
+
+
+
